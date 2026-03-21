@@ -1,10 +1,8 @@
 import sqlite3
 import hashlib
-from subprocess import check_output
 
 
 def connect():
-    # Add timeout to wait if DB is locked (default 5s)
     return sqlite3.connect("fashion.db", timeout=5)
 
 def hash_password(password: str) -> str:
@@ -40,12 +38,12 @@ def verify_user(userid, password):
         print("Error:", e)
         return None
 
-def add_staff(name, address, contact, payment_status):
+def add_staff(name, contact, payment_status):
     try:
         with connect() as db:
             cursor = db.cursor()
-            query = "INSERT INTO staff (staff_fullname, staff_contact, staff_address, payment_status) VALUES (?, ?, ?, ?)"
-            values = (name, contact, address, payment_status)
+            query = "INSERT INTO staff (staff_fullname, staff_contact, payment_status) VALUES (?, ?, ?)"
+            values = (name, contact, payment_status)
             cursor.execute(query, values)
         return True
     except Exception as  e:

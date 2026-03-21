@@ -23,6 +23,8 @@ class managerDashboard(QMainWindow):
 
         product_names = get_product_names()
         self.comboBoxSelectProduct.addItems(product_names)
+        self.txtBoxPaid.addItems(["Select payment status", "Paid", "Not Paid"])
+        self.txtBoxGender.addItems(["Select gender", "Male","Female"])
 
         self.username.setText(fullname)
 
@@ -90,15 +92,18 @@ class managerDashboard(QMainWindow):
     # BUTTON FUNCTIONALITES
     def handle_add_staff(self):
         name = self.txtBoxFullName.text()
-        address = self.txtBoxStaffAddress.text()
         contact = self.txtBoxStaffContact.text()
-        payment_status = self.txtBoxPaid.text()
+        payment_status = self.txtBoxPaid.currentText()
 
-        if not name or not address or not contact or not payment_status:
+        if payment_status == "Select payment status":
+            QMessageBox.warning(self, "Unfilled field","No payment status selected")
+            return
+
+        if not name or not contact or not payment_status:
             QMessageBox.warning(self , "Empty", "Fill all the fields")
             return
 
-        if add_staff(name, address, contact, payment_status):
+        if add_staff(name, contact, payment_status):
             QMessageBox.information(self, "Success", "Staff added successfully!")
             self.staffModel.select()
             self.load_dashboard_data()
@@ -121,9 +126,12 @@ class managerDashboard(QMainWindow):
     def handle_add_product(self):
         productName = self.txtBoxProductName.text()
         brand = self.txtBoxBrand.text()
-        gender = self.txtBoxGender.text()
+        gender = self.txtBoxGender.currentText()
         price = self.txtBoxPrice.text()
         description = self.txtBoxDescription.text()
+
+        if gender == "Select gender":
+            QMessageBox.warning(self, "Unfilled field", "Select gender")
 
         if not productName or not brand or not gender or not price or not description:
             QMessageBox.warning(self, "Empty", "Fill all the fields")

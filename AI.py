@@ -60,11 +60,11 @@ class AIChatDialog(QDialog):
         cursor = conn.cursor()
 
         try:
-            # Greeting
+            # Greeting the user
             if "hello" in question or "hi" in question:
                 return f"Hello, {self.fullname}! How can I help you today?"
 
-            # Products Intelligence
+            # Questions on products
             elif "total product" in question:
                 cursor.execute("SELECT COUNT(*) FROM products")
                 total = cursor.fetchone()[0]
@@ -92,7 +92,7 @@ class AIChatDialog(QDialog):
                     return f"Here are your products:\n{items}"
                 return "No products available."
 
-            # Customer questions
+            # Questions on customer
             elif "total customer" in question:
                 cursor.execute("SELECT COUNT(*) FROM customer")
                 total = cursor.fetchone()[0]
@@ -109,9 +109,8 @@ class AIChatDialog(QDialog):
                 return "No customers found."
 
             elif "measurement" in question:
-                # Example: "show measurement for John"
                 words = question.split()
-                name = words[-1]  # basic version (can improve later)
+                name = words[-1]
 
                 cursor.execute("""
                     SELECT chest, waist, sleeve, trouser_length
@@ -129,7 +128,7 @@ class AIChatDialog(QDialog):
                 return "Customer not found."
 
 
-            # Staff questions
+            # Questions on staff
             elif "total staff" in question:
                 cursor.execute("SELECT COUNT(*) FROM staff")
                 total = cursor.fetchone()[0]
