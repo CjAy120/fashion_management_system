@@ -50,12 +50,12 @@ def add_staff(name, contact, payment_status):
         print("Error:", e)
         return False
 
-def add_customer(name,address,contact,gender):
+def add_customer(name,contact, gender, topLength, aroundArm, sleeveLength, wrist, waist, trouserLength, thighs, seat):
     try:
         with connect() as db:
             cursor = db.cursor()
-            query = "INSERT INTO customer (customer_fullname, contact, address, gender) VALUES (?, ?, ?, ?)"
-            values = (name, contact, address, gender)
+            query = "INSERT INTO customers (customer_fullname, contact, gender, top_length, around_arm, sleeve, wrist, waist, trouser_length, thighs, seat) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+            values = (name, contact, gender, topLength, aroundArm, sleeveLength, wrist, waist, trouserLength, thighs, seat)
             cursor.execute(query, values)
         return True
     except Exception as e:
@@ -89,7 +89,7 @@ def get_orders():
                 o.status
             FROM orders o
             JOIN products p ON o.product_id = p.product_id
-            JOIN customer c ON o.customer_id = c.customer_id
+            JOIN customers c ON o.customer_id = c.customer_id
             """
 
             cursor.execute(query)
@@ -103,7 +103,7 @@ def get_customer_names():
     try:
         with connect() as db:
             cursor = db.cursor()
-            cursor.execute("SELECT customer_fullname FROM customer")
+            cursor.execute("SELECT customer_fullname FROM customers")
             return [row[0] for row in cursor.fetchall()]
     except Exception as e:
         print("Error:", e)
@@ -123,7 +123,7 @@ def get_customer_id_by_name(name):
     try:
         with connect() as db:
             cursor = db.cursor()
-            cursor.execute("SELECT customer_id FROM customer WHERE customer_fullname=?", (name,))
+            cursor.execute("SELECT customer_id FROM customers WHERE customer_fullname=?", (name,))
             row = cursor.fetchone()
             return row[0] if row else None
     except Exception as e:
@@ -167,7 +167,7 @@ def get_customer_count():
     conn = sqlite3.connect("fashion.db")
     cursor = conn.cursor()
 
-    cursor.execute("SELECT COUNT(*) FROM customer")
+    cursor.execute("SELECT COUNT(*) FROM customers")
     count = cursor.fetchone()[0]
 
     conn.close()

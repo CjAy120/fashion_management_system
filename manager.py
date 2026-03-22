@@ -25,6 +25,7 @@ class managerDashboard(QMainWindow):
         self.comboBoxSelectProduct.addItems(product_names)
         self.txtBoxPaid.addItems(["Select payment status", "Paid", "Not Paid"])
         self.txtBoxGender.addItems(["Select gender", "Male","Female"])
+        self.txtBoxCustomerGender.addItems(["Select gender", "Male", "Female"])
 
         self.username.setText(fullname)
 
@@ -110,18 +111,42 @@ class managerDashboard(QMainWindow):
 
     def handle_add_customer(self):
         fullname = self.fullName.text()
-        address = self.txtBoxAddress.text()
         contact =  self.txtBoxCustomerContact.text()
-        gender = self.txtBoxCustomerGender.text()
+        gender = self.txtBoxCustomerGender.currentText()
+        topLength = self.txtBoxtopLength.text()
+        wrist = self.txtBoxWrist.text()
+        waist = self.txtBoxWaist.text()
+        trouserLength = self.txtBoxTrouser.text()
+        thighs = self.txtBoxThighs.text()
+        sleeveLength = self.txtBoxSleeveLength.text()
+        seat = self.txtBoxSeat.text()
+        aroundArm = self.txtBoxAroundArm.text()
+        try:
+            if gender == "Select gender":
+                QMessageBox.warning(self, "Unfilled field","No gender selected")
+                return
 
-        if not fullname or not address or not contact or not gender:
-            QMessageBox.warning(self,"empty","name,address,contact,gender should not be empty")
-            return
+            if not fullname or not contact or not gender:
+                QMessageBox.warning(self,"empty","name,address,contact,gender should not be empty")
+                return
 
-        if add_customer(fullname, address, contact, gender):
-            QMessageBox.information(self, "Success", "Customer added successfully")
-            self.customerModel.select()
-            self.load_dashboard_data()
+            if not topLength or not wrist or not waist or not trouserLength or not thighs or not sleeveLength or not seat or not aroundArm:
+                confirm = QMessageBox.question(
+                    self,
+                    "Confirm Add",
+                    f"Add customer without measurement?",
+                    QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+                )
+
+                if confirm == QMessageBox.StandardButton.No:
+                    return
+
+            if add_customer(fullname, contact, gender, topLength, aroundArm, sleeveLength, wrist, waist, trouserLength, thighs, seat):
+                QMessageBox.information(self, "Success", "Customer added successfully")
+                self.customerModel.select()
+                self.load_dashboard_data()
+        except Exception as e:
+            QMessageBox.warning(self, e, e)
 
     def handle_add_product(self):
         productName = self.txtBoxProductName.text()
@@ -226,7 +251,7 @@ class managerDashboard(QMainWindow):
             return
 
         self.customerModel = QSqlTableModel(self, self.db)
-        self.customerModel.setTable("customer")
+        self.customerModel.setTable("customers")
         self.customerModel.select()
 
         self.customerTable.setModel(self.customerModel)

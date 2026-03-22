@@ -94,12 +94,12 @@ class AIChatDialog(QDialog):
 
             # Questions on customer
             elif "total customer" in question:
-                cursor.execute("SELECT COUNT(*) FROM customer")
+                cursor.execute("SELECT COUNT(*) FROM customers")
                 total = cursor.fetchone()[0]
                 return f"You have {total} registered customers."
 
             elif "list customer" in question:
-                cursor.execute("SELECT customer_fullname, contact FROM customer")
+                cursor.execute("SELECT customer_fullname, contact FROM customers")
                 results = cursor.fetchall()
                 if results:
                     names = "\n".join(
@@ -113,18 +113,23 @@ class AIChatDialog(QDialog):
                 name = words[-1]
 
                 cursor.execute("""
-                    SELECT chest, waist, sleeve, trouser_length
-                    FROM customer
+                    SELECT top_length, around_arm, wrist, waist, sleeve, thighs, seat, trouser_length
+                    FROM customers
                     WHERE customer_fullname LIKE ?
                 """, ('%' + name + '%',))
 
                 result = cursor.fetchone()
                 if result:
                     return (f"Measurements:\n"
-                            f"Chest: {result[0]}\n"
-                            f"Waist: {result[1]}\n"
-                            f"Sleeve: {result[2]}\n"
-                            f"Trouser Length: {result[3]}")
+                            f"Top Length: {result[0]}\n"
+                            f"Around Arm: {result[1]}\n"
+                            f"Wrist: {result[2]}\n"
+                            f"Waist: {result[3]}\n"
+                            f"Sleeve: {result[4]}\n"
+                            f"Thighs: {result[5]}"
+                            f"Seat: {result[6]}\n"
+                            f"Trouser Length: {result[7]}\n"
+                            )
                 return "Customer not found."
 
 
