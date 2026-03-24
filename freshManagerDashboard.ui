@@ -84,7 +84,7 @@ color: #C0C0C0;
      <string notr="true">background-color: rgb(34, 34, 103);</string>
     </property>
     <property name="currentIndex">
-     <number>2</number>
+     <number>5</number>
     </property>
     <widget class="QWidget" name="customersPage">
      <property name="styleSheet">
