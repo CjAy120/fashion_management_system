@@ -1,10 +1,10 @@
-from PyQt6.QtWidgets import QMainWindow, QGraphicsBlurEffect, QMessageBox, QTableView
+from PyQt6.QtWidgets import QMainWindow, QGraphicsBlurEffect, QMessageBox, QTableView, QFileDialog
 from PyQt6.QtWidgets import (QMainWindow, QPushButton, QGraphicsOpacityEffect, QGraphicsDropShadowEffect,
                              QLabel, QProgressBar, QCompleter)
 from PyQt6.QtCore import QPropertyAnimation, QTimer, QRect, QEasingCurve, QParallelAnimationGroup, QDate,QPoint, Qt
 from AI import AIChatDialog
 from PyQt6.uic import loadUi
-from PyQt6.QtGui import QColor
+from PyQt6.QtGui import QColor, QPixmap, QPainter, QPainterPath, QIcon
 from databaseconn import (add_staff, add_customer, add_orders, add_product, get_customer_names,
                           get_product_names, get_product_id_by_name, get_customer_id_by_name, get_staff_count,
                           get_order_count, get_product_count, get_customer_count)
@@ -20,6 +20,9 @@ class managerDashboard(QMainWindow):
         autoComplete = QCompleter(customer_name)
         autoComplete.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
         self.txtBoxCustomerfullName.setCompleter(autoComplete)
+        self.profile_image_path = None
+        self.profilePic.clicked.connect(self.set_profile_picture)
+        self.update_profile_pic(None)
 
         product_names = get_product_names()
         self.comboBoxSelectProduct.addItems(product_names)
@@ -34,6 +37,7 @@ class managerDashboard(QMainWindow):
         self.load_product()
         self.load_orders()
         self.load_dashboard_data()
+        self.setup_measurement_validation()
 
         self.button_geometries = {}
         self.button_animations = {}
@@ -79,6 +83,29 @@ class managerDashboard(QMainWindow):
         self.btnAddOrder.clicked.connect(self.handle_add_orders)
         self.logoutBtn.clicked.connect(self.log_out)
         self.searchCustomer.textChanged.connect(self.search_customer)
+
+        # Clear fields
+        self.BtnClearStaff.clicked.connect(lambda: [
+            self.txtBoxFullName.clear(),
+            self.txtBoxStaffContact.clear(),
+            self.txtBoxPaid.setCurrentIndex(0)
+        ])
+
+        self.btnClearOrders.clicked.connect(lambda: [
+            self.txtBoxCustomerfullName.clear(),
+            self.txtBoxQuantity.clear(),
+            self.txtPaymentStatus.clear(),
+            self.comboBoxSelectProduct.setCurrentIndex(0),
+            self.orderDate.setDate(QDate.currentDate())
+        ])
+
+        self.BtnClearProduct.clicked.connect(lambda: [
+            self.txtBoxProductName.clear(),
+            self.txtBoxDescription.clear(),
+            self.txtBoxBrand.clear(),
+            self.txtBoxPrice.clear(),
+            self.txtBoxGender.setCurrentIndex(0)
+        ])
 
         self.staffAddBtn.clicked.connect(
             lambda:self.toggle_slide_widget(self.addStaffField)
@@ -497,6 +524,104 @@ class managerDashboard(QMainWindow):
 
             self.load_dashboard_data()
             QMessageBox.information(self, "Deleted", f"{item_name.capitalize()} deleted successfully.")
+
+# Profile picture
+    def set_profile_picture(self):
+        file_path, _ = QFileDialog.getOpenFileName(
+            self,
+            "Select Profile Picture",
+            "",
+            "Images (*.png *.jpg *.jpeg *.bmp *.webp)"
+        )
+        if file_path:
+            self.profile_image_path = file_path
+            self.update_profile_pic(file_path)
+
+    def update_profile_pic(self, path):
+        size = self.profilePic.width()  # 51px from the UI
+
+        if path:
+            pixmap = QPixmap(path).scaled(
+                size, size,
+                Qt.AspectRatioMode.KeepAspectRatioByExpanding,
+                Qt.TransformationMode.SmoothTransformation
+            )
+        else:
+            # Default grey avatar circle
+            pixmap = QPixmap(size, size)
+            pixmap.fill(Qt.GlobalColor.transparent)
+
+        # Crop to circle
+        rounded = QPixmap(size, size)
+        rounded.fill(Qt.GlobalColor.transparent)
+        painter = QPainter(rounded)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        path = QPainterPath()
+        path.addEllipse(0, 0, size, size)
+        painter.setClipPath(path)
+        if not path:
+            painter.setBrush(QColor("#555577"))
+            painter.drawEllipse(0, 0, size, size)
+        painter.drawPixmap(0, 0, pixmap)
+        painter.end()
+
+        self.profilePic.setIcon(QIcon(rounded))
+        self.profilePic.setIconSize(self.profilePic.size())
+
+    def setup_measurement_validation(self):
+        measurement_fields = [
+            self.txtBoxtopLength,
+            self.txtBoxAroundArm,
+            self.txtBoxSleeveLength,
+            self.txtBoxWrist,
+            self.txtBoxWaist,
+            self.txtBoxTrouser,
+            self.txtBoxThighs,
+            self.txtBoxSeat,
+            self.txtBoxCustomerContact,
+            self.txtBoxPrice
+        ]
+
+        for field in measurement_fields:
+            field.textChanged.connect(lambda text, f=field: self.validate_numeric_field(f, text))
+
+    def validate_numeric_field(self, field, text):
+        if text == "":
+            field.setStyleSheet("""
+                background: transparent;
+                border: 2px solid white;
+                color: white;
+            """)
+            return
+
+        # Allow digits and a single dot only
+        if not all(c.isdigit() or c == '.' for c in text) or text.count('.') > 1:
+            # Remove the last invalid character
+            field.blockSignals(True)
+            field.setText(text[:-1])
+            field.blockSignals(False)
+
+            # Flash red border as warning
+            field.setStyleSheet("""
+                background: transparent;
+                border: 2px solid #DC143C;
+                color: white;
+            """)
+
+            QMessageBox.warning(self, "Invalid Input", "Must be numbers only.")
+
+            # Reset border after 1.5s
+            QTimer.singleShot(1500, lambda: field.setStyleSheet("""
+                background: transparent;
+                border: 2px solid white;
+                color: white;
+            """))
+        else:
+            field.setStyleSheet("""
+                background: transparent;
+                border: 2px solid white;
+                color: white;
+            """)
 
 def make_3d_button(button):
     shadow = QGraphicsDropShadowEffect()
