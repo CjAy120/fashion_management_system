@@ -684,7 +684,7 @@
  [],
  False,
  False,
- 1774324839,
+ 1774362199,
  [('runw.exe',
    'C:\\Users\\samue\\AppData\\Roaming\\Python\\Python313\\site-packages\\PyInstaller\\bootloader\\Windows-64bit-intel\\runw.exe',
    'EXECUTABLE')],
